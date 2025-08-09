@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Topics - LearnHub{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center justify-between">
+        <h1 class="text-4xl font-bold text-gray-800">Learning Topics</h1>
+        {% if user.is_authenticated and user.is_teacher %}
+            <a href="{% url 'create_topic' %}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
+                Create Topic
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if topics %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for topic in topics %}
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ topic.name }}</h3>
+                    <span class="bg-primary text-white text-sm px-2 py-1 rounded">{{ topic.courses.count }} courses</span>
+                </div>
+                
+                <p class="text-gray-600 mb-6">{{ topic.description|default:"No description available"|truncatewords:20 }}</p>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Created {{ topic.created_at|timesince }} ago</span>
+                    <a href="{% url 'topic_detail' topic.slug %}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
+                        View Courses
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-12">
+        <p class="text-gray-500 text-lg mb-4">No topics available yet.</p>
+        {% if user.is_authenticated and user.is_teacher %}
+            <a href="{% url 'create_topic' %}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition">
+                Create the First Topic
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

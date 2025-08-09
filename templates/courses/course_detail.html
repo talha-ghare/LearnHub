@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - LearnHub{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md p-8 mb-8">
+    <div class="flex items-start justify-between mb-6">
+        <div class="flex-1">
+            <div class="flex items-center mb-4">
+                <span class="bg-primary text-white text-sm px-3 py-1 rounded">{{ course.topic.name }}</span>
+                <span class="text-gray-500 text-sm ml-4">{{ videos.count }} videos</span>
+            </div>
+            
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ course.title }}</h1>
+            <p class="text-gray-600 mb-6">{{ course.description }}</p>
+            
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-gray-500">
+                    Created by <strong>{{ course.teacher.get_full_name|default:course.teacher.username }}</strong>
+                </div>
+                <div class="text-sm text-gray-500">
+                    {{ course.created_at|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+        
+        {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="w-64 h-48 object-cover rounded-lg ml-8">
+        {% endif %}
+    </div>
+    
+    {% if is_teacher %}
+        <div class="border-t pt-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-800">Teacher Actions</h3>
+                <a href="{% url 'upload_video' course.id %}" 
+                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                    Upload New Video
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Course Videos -->
+<div class="bg-white rounded-lg shadow-md p-8">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Course Videos</h2>
+    
+    {% if videos %}
+        <div class="space-y-4">
+            {% for video in videos %}
+                <div class="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition">
+                    <div class="flex-shrink-0">
+                        {% if video.thumbnail %}
+                            <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}" class="w-24 h-18 object-cover rounded">
+                        {% else %}
+                            <div class="w-24 h-18 bg-gray-200 rounded flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ video.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-2">{{ video.description|truncatewords:20 }}</p>
+                        <div class="flex items-center text-sm text-gray-500 space-x-4">
+                            <span>{{ video.comments.count }} comments</span>
+                            <span>Added {{ video.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'video_detail' video.id %}" 
+                       class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition">
+                        Watch
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-500 mb-4">No videos in this course yet.</p>
+            {% if is_teacher %}
+                <a href="{% url 'upload_video' course.id %}" 
+                   class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition">
+                    Upload First Video
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

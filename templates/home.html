@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to LearnHub{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="text-5xl font-bold text-gray-800 mb-8">Welcome to LearnHub</h1>
+    <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+        Your gateway to online learning. Join thousands of students and teachers sharing knowledge.
+    </p>
+    
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">For Students</h3>
+            <p class="text-gray-600 mb-6">Browse courses, bookmark videos, and learn from expert teachers.</p>
+            <a href="{% url 'course_list' %}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition">
+                Browse Courses
+            </a>
+        </div>
+        
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">For Teachers</h3>
+            <p class="text-gray-600 mb-6">Create courses, upload videos, and share your expertise with the world.</p>
+            {% if user.is_authenticated and user.is_teacher %}
+                <a href="{% url 'create_course' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                    Create Course
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                    Join as Teacher
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

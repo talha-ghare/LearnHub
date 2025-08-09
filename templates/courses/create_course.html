@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Course - LearnHub{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Create New Course</h1>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Course Title *
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label for="{{ form.topic.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Topic *
+                </label>
+                {{ form.topic }}
+                {% if form.topic.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.topic.errors.0 }}</p>
+                {% endif %}
+                <p class="text-gray-500 text-sm mt-1">
+                    Don't see your topic? <a href="{% url 'create_topic' %}" class="text-primary hover:underline">Create a new one</a>
+                </p>
+            </div>
+            
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Course Thumbnail
+                </label>
+                {{ form.thumbnail }}
+                {% if form.thumbnail.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.thumbnail.errors.0 }}</p>
+                {% endif %}
+                <p class="text-gray-500 text-sm mt-1">Optional: Upload a thumbnail image for your course</p>
+            </div>
+            
+            <div class="flex items-center justify-between pt-6">
+                <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-gray-800">Cancel</a>
+                <button type="submit" class="bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-secondary transition">
+                    Create Course
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background-color: white;
+}
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    border-color: #3b82f6;
+}
+select.form-input {
+    padding-right: 2.5rem;
+}
+</style>
+{% endblock %}

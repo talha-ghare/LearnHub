@@ -1,5 +1,4 @@
-## accounts/views.py
-
+# accounts/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -7,6 +6,7 @@ from django.contrib import messages
 from .forms import CustomUserCreationForm
 from courses.models import Course
 from videos.models import Bookmark
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -20,6 +20,7 @@ def register_view(request):
         form = CustomUserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
 
+
 @login_required
 def dashboard_view(request):
     context = {}
@@ -28,7 +29,7 @@ def dashboard_view(request):
         # Teacher dashboard
         my_courses = Course.objects.filter(teacher=request.user)
         context.update({
-            'my_courses': my_courses,
+            'courses': my_courses,  # Changed from 'my_courses' to 'courses' to match template
             'total_courses': my_courses.count(),
             'total_videos': sum(course.videos.count() for course in my_courses)
         })
@@ -46,7 +47,12 @@ def dashboard_view(request):
     
     return render(request, template, context)
 
+
 @login_required
 def profile_view(request):
-    # Simple profile view - can be enhanced later
-    return render(request, 'accounts/profile.html', {'user': request.user})
+    """
+    Profile view that redirects to appropriate dashboard.
+    Since LearnHub uses role-based dashboards instead of traditional profile pages,
+    we redirect users to their personalized dashboard.
+    """
+    return redirect('dashboard')

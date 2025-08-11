@@ -47,7 +47,7 @@ class Course(models.Model):
     teacher = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        limit_choices_to={'is_teacher': True},
+        limit_choices_to={'user_type': 'teacher'},
         related_name='taught_courses'
     )
     topic = models.ForeignKey(
@@ -60,7 +60,6 @@ class Course(models.Model):
         blank=True,
         null=True
     )
-    view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, blank=True)

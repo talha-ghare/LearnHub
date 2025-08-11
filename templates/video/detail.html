@@ -1,119 +1,285 @@
+<!-- video/detail.html - Video Player and Course Sidebar -->
 {% extends 'base.html' %}
 
 {% block title %}{{ video.title }} - LearnHub{% endblock %}
 
 {% block content %}
-<div class="grid lg:grid-cols-3 gap-8">
-    <!-- Video Player -->
-    <div class="lg:col-span-2">
-        <div class="bg-black rounded-lg mb-6 aspect-video flex items-center justify-center">
-            {% if video.video_file %}
-                <video controls class="w-full h-full rounded-lg">
-                    <source src="{{ video.video_file.url }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            {% else %}
-                <div class="text-white text-center">
-                    <svg class="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                    <p>Video not available</p>
-                </div>
-            {% endif %}
-        </div>
-        
-        <!-- Video Info -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex-1">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ video.title }}</h1>
-                    <p class="text-gray-600 mb-4">{{ video.description }}</p>
-                    
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>{{ video.comments.count }} comments</span>
-                        <span>Added {{ video.created_at|timesince }} ago</span>
-                    </div>
-                </div>
-                
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'toggle_bookmark' video.id %}" class="ml-4">
-                        {% csrf_token %}
-                        <button type="submit" class="flex items-center space-x-2 {% if is_bookmarked %}bg-red-500 hover:bg-red-600{% else %}bg-primary hover:bg-secondary{% endif %} text-white px-4 py-2 rounded-lg transition">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            <span>{% if is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}</span>
-                        </button>
-                    </form>
-                {% endif %}
-            </div>
-            
-            <!-- Course Link -->
-            <div class="border-t pt-4">
-                <p class="text-sm text-gray-600 mb-2">Part of course:</p>
-                <a href="{% url 'course_detail' video.course.slug %}" class="text-primary hover:underline font-medium">
-                    {{ video.course.title }}
-                </a>
-            </div>
-        </div>
-        
-        <!-- Comments Section -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-6">Comments ({{ comments.count }})</h3>
-            
-            <!-- Add Comment Form -->
-            {% if user.is_authenticated and comment_form %}
-                <form method="post" class="mb-8">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        {{ comment_form.content }}
-                    </div>
-                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
-                        Add Comment
-                    </button>
-                </form>
-            {% elif not user.is_authenticated %}
-                <div class="mb-8 p-4 bg-gray-50 rounded-lg text-center">
-                    <p class="text-gray-600">
-                        <a href="{% url 'login' %}" class="text-primary hover:underline">Login</a> to add comments
-                    </p>
-                </div>
-            {% endif %}
-            
-            <!-- Comments List -->
-            {% if comments %}
-                <div class="space-y-6">
-                    {% for comment in comments %}
-                        <div class="border-b pb-4 last:border-b-0">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                    {{ comment.user.username|first|upper }}
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-2 mb-1">
-                                        <span class="font-medium text-gray-800">{{ comment.user.get_full_name|default:comment.user.username }}</span>
-                                        <span class="text-gray-500 text-sm">{{ comment.created_at|timesince }} ago</span>
+<div class="min-h-screen bg-black">
+    <!-- Video Player Section -->
+    <section class="relative">
+        <div class="container mx-auto px-6 py-8">
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Video Player -->
+                <div class="lg:col-span-3">
+                    <!-- Video Container -->
+                    <div class="relative bg-black rounded-2xl overflow-hidden shadow-2xl mb-6">
+                        <div class="aspect-video">
+                            {% if video.video_file %}
+                                <video id="video-player" class="w-full h-full object-contain" controls poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}">
+                                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center">
+                                    <div class="text-center text-white">
+                                        <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                        <p class="text-xl font-medium">Video not available</p>
                                     </div>
-                                    <p class="text-gray-700">{{ comment.content|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Video Controls Overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6">
+                            <div class="flex items-center justify-between text-white">
+                                <div class="flex items-center space-x-4">
+                                    <button id="play-pause-btn" class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-colors">
+                                        <svg id="play-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                        <svg id="pause-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                                        </svg>
+                                    </button>
+                                    <div class="text-sm">
+                                        <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-4">
+                                    <button class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                        </svg>
+                                    </button>
+                                    <button id="fullscreen-btn" class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="mt-4">
+                                <div class="w-full bg-white bg-opacity-20 rounded-full h-1 cursor-pointer" id="progress-container">
+                                    <div id="progress-bar" class="bg-white h-1 rounded-full transition-all duration-200" style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
+                    </div>
+                    
+                    <!-- Video Info (Mobile) -->
+                    <div class="lg:hidden bg-white rounded-2xl p-6 mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 mb-3">{{ video.title }}</h1>
+                        <p class="text-gray-600 mb-4">{{ video.description }}</p>
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <span>{{ video.view_count }} views</span>
+                            <span>{{ video.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
                 </div>
-            {% else %}
-                <p class="text-gray-500 text-center py-8">No comments yet. Be the first to comment!</p>
-            {% endif %}
+                
+                <!-- Course Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden sticky top-6">
+                        <!-- Course Header -->
+                        <div class="bg-gradient-to-r from-primary to-secondary p-6">
+                            <h2 class="text-xl font-bold text-white mb-2">{{ video.course.title }}</h2>
+                            <div class="flex items-center text-blue-100 text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                <span>{{ video.course.videos.count }} lessons</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Progress -->
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-700">Course Progress</span>
+                                <span class="text-sm text-gray-500">2/{{ video.course.videos.count }}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-primary to-secondary h-2 rounded-full" style="width: 25%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Video Playlist -->
+                        <div class="max-h-96 overflow-y-auto">
+                            {% for course_video in video.course.videos.all %}
+                                <div class="playlist-item p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer {% if course_video.id == video.id %}bg-blue-50 border-l-4 border-l-primary{% endif %}" 
+                                     onclick="location.href='{% url 'video_detail' course_video.id %}'">
+                                    <div class="flex items-start space-x-3">
+                                        <!-- Video Thumbnail -->
+                                        <div class="w-16 h-12 flex-shrink-0 relative">
+                                            {% if course_video.thumbnail %}
+                                                <img src="{{ course_video.thumbnail.url }}" alt="{{ course_video.title }}" class="w-full h-full object-cover rounded-lg">
+                                            {% else %}
+                                                <div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z"/>
+                                                    </svg>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <!-- Play Indicator -->
+                                            {% if course_video.id == video.id %}
+                                                <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                                    <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                                        <svg class="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M8 5v14l11-7z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Video Info -->
+                                        <div class="flex-grow min-w-0">
+                                            <h3 class="text-sm font-medium text-gray-800 mb-1 line-clamp-2 {% if course_video.id == video.id %}text-primary{% endif %}">
+                                                {{ course_video.title }}
+                                            </h3>
+                                            <div class="flex items-center text-xs text-gray-500 space-x-2">
+                                                <span>5:30</span>
+                                                {% if course_video.id != video.id %}
+                                                    <span>•</span>
+                                                    <span>{{ course_video.view_count }} views</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Course Actions -->
+                        <div class="p-6 bg-gray-50">
+                            <a href="{% url 'course_detail' video.course.slug %}" class="block w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-medium text-center hover:shadow-lg transition-all duration-300 mb-3">
+                                View Full Course
+                            </a>
+                            <button class="block w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-medium text-center hover:bg-gray-300 transition-colors">
+                                Download Resources
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
     
-    <!-- Sidebar -->
-    <div class="lg:col-span-1">
-        <!-- Course Videos Playlist -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Playlist</h3>
-            <div class="space-y-3">
-                {% for course_video in video.course.videos.all %}
-                    <div class="flex items-center space-x-3 p-2 rounded {% if course_video.id == video.id %}bg-primary text-white{% else %}hover:bg-gray-50{% endif %} transition">
-                        <div class="flex-shrink-0">
-                            {% if course_v
-p
+    <!-- Video Details (Desktop) -->
+    <section class="hidden lg:block bg-white">
+        <div class="container mx-auto px-6 py-8">
+            <div class="max-w-4xl">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ video.title }}</h1>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-6 text-gray-600">
+                        <span>{{ video.view_count }} views</span>
+                        <span>{{ video.created_at|timesince }} ago</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">{{ video.course.teacher.username|first|upper }}</span>
+                            </div>
+                            <span>{{ video.course.teacher.get_full_name|default:video.course.teacher.username }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button class="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14 9V5a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H14z"/>
+                            </svg>
+                            <span>Save</span>
+                        </button>
+                        <button class="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                            </svg>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="prose prose-lg max-w-none text-gray-700">
+                    {{ video.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Video player controls
+    const video = document.getElementById('video-player');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
+    const currentTimeSpan = document.getElementById('current-time');
+    const durationSpan = document.getElementById('duration');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    
+    if (video) {
+        // Play/Pause functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                video.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        });
+        
+        // Update progress bar
+        video.addEventListener('timeupdate', () => {
+            const progress = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = progress + '%';
+            currentTimeSpan.textContent = formatTime(video.currentTime);
+        });
+        
+        // Set duration when metadata loads
+        video.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(video.duration);
+        });
+        
+        // Seek functionality
+        progressContainer.addEventListener('click', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            video.currentTime = percent * video.duration;
+        });
+        
+        // Fullscreen functionality
+        fullscreenBtn.addEventListener('click', () => {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playPauseBtn.click();
+            }
+        });
+    }
+    
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+</script>
+{% endblock %}

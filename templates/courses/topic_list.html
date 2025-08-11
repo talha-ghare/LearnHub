@@ -1,47 +1,93 @@
+<!-- courses/topic_list.html - Topics Listing Page -->
 {% extends 'base.html' %}
 
-{% block title %}Topics - LearnHub{% endblock %}
+{% block title %}Explore Topics - LearnHub{% endblock %}
 
 {% block content %}
-<div class="mb-8">
-    <div class="flex items-center justify-between">
-        <h1 class="text-4xl font-bold text-gray-800">Learning Topics</h1>
-        {% if user.is_authenticated and user.is_teacher %}
-            <a href="{% url 'create_topic' %}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
-                Create Topic
-            </a>
-        {% endif %}
+<!-- Hero Header -->
+<section class="relative py-16 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent opacity-10"></div>
+    <div class="relative container mx-auto px-6">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl lg:text-6xl font-bold text-gray-800 mb-6 animate-fadeIn">
+                Explore
+                <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Topics</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto animate-fadeIn" style="animation-delay: 0.2s;">
+                Discover learning paths organized by subject areas and skill levels
+            </p>
+        </div>
     </div>
-</div>
+</section>
 
-{% if topics %}
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for topic in topics %}
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800">{{ topic.name }}</h3>
-                    <span class="bg-primary text-white text-sm px-2 py-1 rounded">{{ topic.courses.count }} courses</span>
+<!-- Topics Grid -->
+<section class="container mx-auto px-6 pb-20">
+    {% if topics %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for topic in topics %}
+                <div class="topic-card group relative bg-white rounded-3xl shadow-xl overflow-hidden card-hover animate-fadeIn border border-gray-100" style="animation-delay: {{ forloop.counter0|floatformat:1 }}s;">
+                    <!-- Topic Icon/Image -->
+                    <div class="relative h-48 bg-gradient-to-br from-primary via-secondary to-accent overflow-hidden">
+                        <!-- Animated Background Pattern -->
+                        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.3) 2px, transparent 0), radial-gradient(circle at 70% 30%, rgba(255,255,255,0.2) 2px, transparent 0); background-size: 50px 50px;"></div>
+                        
+                        <!-- Topic Icon -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-20 h-20 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Course Count Badge -->
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-white bg-opacity-90 text-primary text-sm font-bold px-3 py-1 rounded-full backdrop-blur-sm">
+                                {{ topic.course_set.count }} courses
+                            </span>
+                        </div>
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                    </div>
+                    
+                    <!-- Topic Content -->
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-primary transition-colors duration-300">
+                            {{ topic.name }}
+                        </h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            {{ topic.description|default:"Explore courses in this exciting topic area"|truncatewords:15 }}
+                        </p>
+                        
+                        <!-- Action Button -->
+                        <a href="{% url 'course_list' %}?topic={{ topic.slug }}" 
+                           class="block w-full bg-gradient-to-r from-primary to-secondary text-white text-center py-3 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                            Explore Courses
+                            <svg class="inline-block w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
-                
-                <p class="text-gray-600 mb-6">{{ topic.description|default:"No description available"|truncatewords:20 }}</p>
-                
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-500">Created {{ topic.created_at|timesince }} ago</span>
-                    <a href="{% url 'topic_detail' topic.slug %}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
-                        View Courses
-                    </a>
-                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-20">
+            <div class="w-32 h-32 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-8 animate-float">
+                <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                </svg>
             </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <div class="text-center py-12">
-        <p class="text-gray-500 text-lg mb-4">No topics available yet.</p>
-        {% if user.is_authenticated and user.is_teacher %}
-            <a href="{% url 'create_topic' %}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition">
-                Create the First Topic
+            <h3 class="text-3xl font-bold text-gray-800 mb-4">No Topics Available</h3>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                No topics have been created yet. Check back soon for exciting learning categories!
+            </p>
+            <a href="{% url 'course_list' %}" class="inline-block bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                Browse All Courses
             </a>
-        {% endif %}
-    </div>
-{% endif %}
+        </div>
+    {% endif %}
+</section>
 {% endblock %}

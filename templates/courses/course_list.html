@@ -1,92 +1,168 @@
+<!-- courses/course_list.html - Modern Course Grid -->
 {% extends 'base.html' %}
 
-{% block title %}Courses - LearnHub{% endblock %}
+{% block title %}Discover Amazing Courses - LearnHub{% endblock %}
 
 {% block content %}
-
-<div class="mb-8">
-    <form method="get" class="max-w-lg mx-auto mb-6">
-        <div class="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
-            <input type="text" 
-                   name="search" 
-                   value="{{ search_query }}"
-                   placeholder="Search courses, topics, or teachers..."
-                   class="flex-1 px-4 py-3 focus:outline-none">
-            <button type="submit" class="bg-primary text-white px-6 py-3 hover:bg-secondary transition">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </button>
+<!-- Hero Header -->
+<section class="relative py-16 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent opacity-10"></div>
+    <div class="relative container mx-auto px-6">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl lg:text-6xl font-bold text-gray-800 mb-6 animate-fadeIn">
+                Discover Amazing
+                <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Courses</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto animate-fadeIn" style="animation-delay: 0.2s;">
+                Explore our curated collection of courses taught by industry experts
+            </p>
         </div>
-        <!-- Preserve topic filter -->
-        {% if selected_topic %}
-            <input type="hidden" name="topic" value="{{ selected_topic }}">
-        {% endif %}
-    </form>
-</div>
-
-<div class="mb-8">
-    <h1 class="text-4xl font-bold text-gray-800 mb-4">All Courses</h1>
-    
-    <!-- Filter by Topic -->
-    <div class="flex items-center space-x-4">
-        <span class="text-gray-700 font-medium">Filter by topic:</span>
-        <a href="{% url 'course_list' %}" 
-           class="px-4 py-2 rounded-lg {% if not selected_topic %}bg-primary text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
-            All
-        </a>
-        {% for topic in topics %}
-            <a href="?topic={{ topic.slug }}" 
-               class="px-4 py-2 rounded-lg {% if selected_topic == topic.slug %}bg-primary text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
-                {{ topic.name }}
+        
+        <!-- Enhanced Search -->
+        <div class="max-w-3xl mx-auto mb-12 animate-fadeIn" style="animation-delay: 0.4s;">
+            <form method="get" class="relative">
+                <div class="relative group">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}"
+                           placeholder="Search for courses, topics, or instructors..."
+                           class="w-full px-6 py-4 pl-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-20 transition-all duration-300 shadow-lg">
+                    <svg class="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 group-focus-within:text-primary transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300">
+                        Search
+                    </button>
+                </div>
+                {% if selected_topic %}
+                    <input type="hidden" name="topic" value="{{ selected_topic }}">
+                {% endif %}
+            </form>
+        </div>
+        
+        <!-- Topic Filters -->
+        <div class="flex flex-wrap justify-center gap-3 mb-8 animate-fadeIn" style="animation-delay: 0.6s;">
+            <a href="{% url 'course_list' %}" 
+               class="topic-filter px-6 py-3 rounded-full font-medium transition-all duration-300 {% if not selected_topic %}bg-gradient-to-r from-primary to-secondary text-white shadow-lg{% else %}bg-white text-gray-700 hover:bg-gray-50 shadow-md hover:shadow-lg{% endif %}">
+                All Topics
             </a>
-        {% endfor %}
+            {% for topic in topics %}
+                <a href="?topic={{ topic.slug }}" 
+                   class="topic-filter px-6 py-3 rounded-full font-medium transition-all duration-300 {% if selected_topic == topic.slug %}bg-gradient-to-r from-primary to-secondary text-white shadow-lg{% else %}bg-white text-gray-700 hover:bg-gray-50 shadow-md hover:shadow-lg{% endif %}">
+                    {{ topic.name }}
+                </a>
+            {% endfor %}
+        </div>
     </div>
-</div>
+</section>
 
 <!-- Courses Grid -->
-{% if courses %}
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for course in courses %}
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                {% if course.thumbnail %}
-                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="w-full h-48 object-cover">
-                {% else %}
-                    <div class="w-full h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                        <span class="text-white text-2xl font-bold">{{ course.title|first }}</span>
-                    </div>
-                {% endif %}
-                
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-primary text-white text-xs px-2 py-1 rounded">{{ course.topic.name }}</span>
-                        <span class="text-gray-500 text-sm">{{ course.videos.count }} videos</span>
-                    </div>
-                    
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ course.title }}</h3>
-                    <p class="text-gray-600 text-sm mb-4">{{ course.description|truncatewords:20 }}</p>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-500">
-                            by {{ course.teacher.get_full_name|default:course.teacher.username }}
+<section class="container mx-auto px-6 pb-20">
+    {% if courses %}
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {% for course in courses %}
+                <div class="course-card group relative bg-white rounded-3xl shadow-xl overflow-hidden card-hover animate-fadeIn border border-gray-100" style="animation-delay: {{ forloop.counter0|floatformat:1 }}s;">
+                    <!-- Course Image -->
+                    <div class="relative overflow-hidden">
+                        {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500">
+                        {% else %}
+                            <div class="w-full h-56 bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center relative overflow-hidden">
+                                <!-- Animated Background Pattern -->
+                                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.3) 2px, transparent 0), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2) 2px, transparent 0); background-size: 40px 40px;"></div>
+                                <div class="relative text-white text-4xl font-bold transform group-hover:scale-110 transition-transform duration-500">
+                                    {{ course.title|first }}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                        
+                        <!-- Topic Badge -->
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-white bg-opacity-90 text-primary text-sm font-bold px-4 py-2 rounded-full backdrop-blur-sm">
+                                {{ course.topic.name }}
+                            </span>
                         </div>
+                        
+                        <!-- Video Count -->
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-black bg-opacity-70 text-white text-sm font-medium px-3 py-1 rounded-full backdrop-blur-sm">
+                                {{ course.videos.count }} videos
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Content -->
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-primary transition-colors duration-300">
+                            {{ course.title }}
+                        </h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">{{ course.description|truncatewords:20 }}</p>
+                        
+                        <!-- Teacher Info -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold">
+                                    {{ course.teacher.username|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">{{ course.teacher.get_full_name|default:course.teacher.username }}</p>
+                                    <p class="text-xs text-gray-500">Instructor</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Stats -->
+                            <div class="text-right">
+                                <div class="flex items-center space-x-1 text-yellow-500 mb-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                    <span class="text-sm text-gray-600">4.8</span>
+                                </div>
+                                <p class="text-xs text-gray-500">{{ course.created_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Button -->
                         <a href="{% url 'course_detail' course.slug %}" 
-                           class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
+                           class="block w-full bg-gradient-to-r from-primary to-secondary text-white text-center py-3 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                             View Course
+                            <svg class="inline-block w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
                         </a>
                     </div>
                 </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-20">
+            <div class="w-32 h-32 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-8 animate-float">
+                <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
             </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <div class="text-center py-12">
-        <p class="text-gray-500 text-lg mb-4">No courses found.</p>
-        {% if user.is_authenticated and user.is_teacher %}
-            <a href="{% url 'create_course' %}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition">
-                Create the First Course
-            </a>
-        {% endif %}
-    </div>
-{% endif %}
+            <h3 class="text-3xl font-bold text-gray-800 mb-4">No Courses Found</h3>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                {% if search_query %}
+                    No courses match your search "{{ search_query }}". Try different keywords or browse all courses.
+                {% else %}
+                    No courses available yet. Be the first to create one!
+                {% endif %}
+            </p>
+            {% if user.is_authenticated and user.is_teacher %}
+                <a href="{% url 'create_course' %}" class="inline-block bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    Create First Course
+                </a>
+            {% else %}
+                <a href="{% url 'course_list' %}" class="inline-block bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-xl font-bold hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    Browse All Courses
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
 {% endblock %}
